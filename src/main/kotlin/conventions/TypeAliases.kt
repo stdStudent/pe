@@ -4,10 +4,12 @@ import java.nio.ByteBuffer
 
 typealias Word = Short
 typealias DWord = Int
+typealias QWord = Long
 
 inline val Byte.hex: String get() = "%02x".format(this)
 inline val Word.hex: String get() = "%04x".format(this)
 inline val DWord.hex: String get() = "%08x".format(this)
+inline val QWord.hex: String get() = "%016x".format(this)
 
 inline var ByteBuffer.byte: Byte
     get() = this.get()
@@ -25,4 +27,10 @@ inline var ByteBuffer.dword: DWord
     get() = this.int
     set(value) {
         this.putInt(value)
+    }
+
+inline var ByteBuffer.qword: QWord
+    get() = this.long
+    set(value) {
+        this.putLong(value)
     }
