@@ -1,9 +1,6 @@
 package std.student.headers.pe
 
-import std.student.conventions.DWord
-import std.student.conventions.Word
-import std.student.conventions.dword
-import std.student.conventions.word
+import std.student.conventions.*
 import java.nio.ByteBuffer
 
 data class CoffHeader(
@@ -33,13 +30,13 @@ data class CoffHeader(
     override fun toString(): String {
         return """
             |COFF HEADER:
-            |   target machine: $targetMachine
-            |   number of sections: $numberOfSections
-            |   time date stamp: $timeDateStamp
-            |   pointer to symbol table: $pointerToSymbolTable
-            |   number of symbols: $numberOfSymbols
-            |   size of optional header: $sizeOfOptionalHeader
-            |   characteristics: $characteristics
+            |   target machine: ${targetMachine.hex}
+            |   number of sections: ${numberOfSections.hex}
+            |   time date stamp: ${timeDateStamp.hex}
+            |   pointer to symbol table: ${pointerToSymbolTable.hex}
+            |   number of symbols: ${numberOfSymbols.hex}
+            |   size of optional header: ${sizeOfOptionalHeader.hex}
+            |   characteristics: ${characteristics.hex}
         """.trimMargin()
     }
 }
