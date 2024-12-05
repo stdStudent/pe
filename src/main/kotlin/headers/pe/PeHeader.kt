@@ -12,6 +12,9 @@ class PeHeader {
     private val coffHeaderOffset: DWord
     private val coffHeader: CoffHeader
 
+    private val optionalHeaderOffset: DWord
+    private val optionalHeader: OptionalHeader
+
     // TODO: Add optional header and section headers
 
     constructor(startOffset: DWord, file: RandomAccessFile) {
@@ -22,24 +25,34 @@ class PeHeader {
         coffHeaderOffset = peSignatureOffset + PeSignature.SIZE
         val coffHeaderBuffer = BufferUtils.getBuffer(file, coffHeaderOffset, CoffHeader.SIZE, ByteOrder.LITTLE_ENDIAN)
         coffHeader = CoffHeader.get(coffHeaderBuffer)
+
+        optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
+        optionalHeader = OptionalHeader(optionalHeaderOffset, file)
     }
 
-    constructor(startOffset: DWord, peSignature: PeSignature, coffHeader: CoffHeader) {
+    constructor(
+        startOffset: DWord,
+        peSignature: PeSignature,
+        coffHeader: CoffHeader,
+        optionalHeader: OptionalHeader,
+    ) {
         peSignatureOffset = startOffset
         this.peSignature = peSignature
 
         coffHeaderOffset = peSignatureOffset + PeSignature.SIZE
         this.coffHeader = coffHeader
-    }
 
-    fun getPeSignature() = peSignature.copy()
-    fun getCoffHeader() = coffHeader.copy()
+        optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
+        this.optionalHeader = optionalHeader
+    }
 
     override fun toString(): String {
         return """
             |$peSignature
             |
             |$coffHeader
+            |
+            |$optionalHeader
         """.trimMargin()
     }
 }
