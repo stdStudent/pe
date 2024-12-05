@@ -9,6 +9,12 @@ inline val Byte.hex: String get() = "%02x".format(this)
 inline val Word.hex: String get() = "%04x".format(this)
 inline val DWord.hex: String get() = "%08x".format(this)
 
+inline var ByteBuffer.byte: Byte
+    get() = this.get()
+    set(value) {
+        this.put(value)
+    }
+
 inline var ByteBuffer.word: Word
     get() = this.short
     set(value) {
