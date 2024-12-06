@@ -5,7 +5,7 @@ import std.student.utils.BufferUtils
 import java.io.RandomAccessFile
 import java.nio.ByteOrder
 
-class PeHeader {
+class Pe {
     private val peSignatureOffset: DWord
     private val peSignature: PeSignature
 
