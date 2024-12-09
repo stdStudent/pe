@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation("io.arrow-kt:arrow-core:2.0.0")
     testImplementation(kotlin("test"))
 }
 
