@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import std.student.headers.dos.DosHeader
-import std.student.headers.dos.DosStub
+import std.student.headers.dos.header.DosHeader
+import std.student.headers.dos.stub.DosStub
 import std.student.headers.pe.Pe
 import java.io.RandomAccessFile
 import javax.swing.JFileChooser
@@ -29,7 +29,7 @@ private fun processFile(filePath: String): String {
 
     val dosHeader = DosHeader.get(file)
     val dosStub = DosStub.get(file)
-    val pe = Pe(dosHeader.offsetToPeSignature, file)
+    val pe = Pe(dosHeader.offsetToPeSignature.data, file)
 
     file.close()
 

@@ -6,6 +6,8 @@ typealias Word = Short
 typealias DWord = Int
 typealias QWord = Long
 
+fun DWord.toQWord(): QWord = this.toLong()
+
 inline val Byte.hex: String get() = "%02x".format(this)
 inline val Word.hex: String get() = "%04x".format(this)
 inline val DWord.hex: String get() = "%08x".format(this)

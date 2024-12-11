@@ -1,37 +1,38 @@
 package std.student.headers.pe
 
 import std.student.conventions.DWord
-import std.student.utils.BufferUtils
+import std.student.conventions.QWord
+import std.student.conventions.toQWord
+import std.student.headers.pe.headers.coff.CoffHeader
+import std.student.headers.pe.headers.optional.OptionalHeader
+import std.student.headers.pe.signature.PeSignature
 import java.io.RandomAccessFile
-import java.nio.ByteOrder
 
 class Pe {
-    private val peSignatureOffset: DWord
+    private val peSignatureOffset: QWord
     private val peSignature: PeSignature
 
-    private val coffHeaderOffset: DWord
+    private val coffHeaderOffset: QWord
     private val coffHeader: CoffHeader
 
-    private val optionalHeaderOffset: DWord
+    private val optionalHeaderOffset: QWord
     private val optionalHeader: OptionalHeader
 
     // TODO: Add optional header and section headers
 
     constructor(startOffset: DWord, file: RandomAccessFile) {
-        peSignatureOffset = startOffset
-        val peSignatureBuffer = BufferUtils.getBuffer(file, peSignatureOffset, PeSignature.SIZE, ByteOrder.LITTLE_ENDIAN)
-        peSignature = PeSignature.get(peSignatureBuffer)
+        peSignatureOffset = startOffset.toQWord()
+        peSignature = PeSignature(peSignatureOffset, file)
 
-        coffHeaderOffset = peSignatureOffset + PeSignature.SIZE
-        val coffHeaderBuffer = BufferUtils.getBuffer(file, coffHeaderOffset, CoffHeader.SIZE, ByteOrder.LITTLE_ENDIAN)
-        coffHeader = CoffHeader.get(coffHeaderBuffer)
+        coffHeaderOffset = peSignatureOffset + peSignature.peType.size
+        coffHeader = CoffHeader.get(coffHeaderOffset, file)
 
         optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
-        optionalHeader = OptionalHeader(optionalHeaderOffset, file)
+        optionalHeader = OptionalHeader.get(optionalHeaderOffset, file)
     }
 
     constructor(
-        startOffset: DWord,
+        startOffset: QWord,
         peSignature: PeSignature,
         coffHeader: CoffHeader,
         optionalHeader: OptionalHeader,
@@ -39,7 +40,7 @@ class Pe {
         peSignatureOffset = startOffset
         this.peSignature = peSignature
 
-        coffHeaderOffset = peSignatureOffset + PeSignature.SIZE
+        coffHeaderOffset = peSignatureOffset + peSignature.peType.size
         this.coffHeader = coffHeader
 
         optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
