@@ -2,6 +2,7 @@ package std.student.headers.pe.headers.optional
 
 import std.student.conventions.QWord
 import std.student.headers.pe.headers.optional.elements.standard.*
+import std.student.headers.pe.headers.optional.elements.windowsSpecific.*
 import java.io.RandomAccessFile
 
 data class OptionalHeader(
@@ -17,6 +18,28 @@ data class OptionalHeader(
     val baseOfData: BaseOfData,
 
     // Windows-specific fields
+    val imageBase: ImageBase,
+    val sectionAlignment: SectionAlignment,
+    val fileAlignment: FileAlignment,
+    val majorOperatingSystemVersion: MajorOperatingSystemVersion,
+    val minorOperatingSystemVersion: MinorOperatingSystemVersion,
+    val majorImageVersion: MajorImageVersion,
+    val minorImageVersion: MinorImageVersion,
+    val majorSubsystemVersion: MajorSubsystemVersion,
+    val minorSubsystemVersion: MinorSubsystemVersion,
+    val win32VersionValue: Win32VersionValue,
+    val sizeOfImage: SizeOfImage,
+    val sizeOfHeaders: SizeOfHeaders,
+    val checkSum: CheckSum,
+    val subsystem: Subsystem,
+    val dllCharacteristics: DllCharacteristics,
+    val sizeOfStackReserve: SizeOfStackReserve,
+    val sizeOfStackCommit: SizeOfStackCommit,
+    val sizeOfHeapReserve: SizeOfHeapReserve,
+    val sizeOfHeapCommit: SizeOfHeapCommit,
+    val loaderFlags: LoaderFlags,
+    val numberOfRvaAndSizes: NumberOfRvaAndSizes,
+
 
     // Data directories
 
@@ -41,6 +64,27 @@ data class OptionalHeader(
                 baseOfData = BaseOfData(headerOffset, magic.data, file),
 
                 // Windows-specific fields
+                imageBase = ImageBase(headerOffset, magic.data, file),
+                sectionAlignment = SectionAlignment(headerOffset, file),
+                fileAlignment = FileAlignment(headerOffset, file),
+                majorOperatingSystemVersion = MajorOperatingSystemVersion(headerOffset, file),
+                minorOperatingSystemVersion = MinorOperatingSystemVersion(headerOffset, file),
+                majorImageVersion = MajorImageVersion(headerOffset, file),
+                minorImageVersion = MinorImageVersion(headerOffset, file),
+                majorSubsystemVersion = MajorSubsystemVersion(headerOffset, file),
+                minorSubsystemVersion = MinorSubsystemVersion(headerOffset, file),
+                win32VersionValue = Win32VersionValue(headerOffset, file),
+                sizeOfImage = SizeOfImage(headerOffset, file),
+                sizeOfHeaders = SizeOfHeaders(headerOffset, file),
+                checkSum = CheckSum(headerOffset, file),
+                subsystem = Subsystem(headerOffset, file),
+                dllCharacteristics = DllCharacteristics(headerOffset, file),
+                sizeOfStackReserve = SizeOfStackReserve(headerOffset, magic.data, file),
+                sizeOfStackCommit = SizeOfStackCommit(headerOffset, magic.data, file),
+                sizeOfHeapReserve = SizeOfHeapReserve(headerOffset, magic.data, file),
+                sizeOfHeapCommit = SizeOfHeapCommit(headerOffset, magic.data, file),
+                loaderFlags = LoaderFlags(headerOffset, magic.data, file),
+                numberOfRvaAndSizes = NumberOfRvaAndSizes(headerOffset, magic.data, file),
 
                 // Data directories
             )
@@ -62,6 +106,27 @@ data class OptionalHeader(
             |    ${baseOfData.realName}: ${baseOfData.hex}
             |
             |  (Windows-specific fields)
+            |    ${imageBase.realName}: ${imageBase.hex}
+            |    ${sectionAlignment.realName}: ${sectionAlignment.hex}
+            |    ${fileAlignment.realName}: ${fileAlignment.hex}
+            |    ${majorOperatingSystemVersion.realName}: ${majorOperatingSystemVersion.hex}
+            |    ${minorOperatingSystemVersion.realName}: ${minorOperatingSystemVersion.hex}
+            |    ${majorImageVersion.realName}: ${majorImageVersion.hex}
+            |    ${minorImageVersion.realName}: ${minorImageVersion.hex}
+            |    ${majorSubsystemVersion.realName}: ${majorSubsystemVersion.hex}
+            |    ${minorSubsystemVersion.realName}: ${minorSubsystemVersion.hex}
+            |    ${win32VersionValue.realName}: ${win32VersionValue.hex}
+            |    ${sizeOfImage.realName}: ${sizeOfImage.hex}
+            |    ${sizeOfHeaders.realName}: ${sizeOfHeaders.hex}
+            |    ${checkSum.realName}: ${checkSum.hex}
+            |    ${subsystem.realName}: ${subsystem.hex}
+            |    ${dllCharacteristics.realName}: ${dllCharacteristics.hex}
+            |    ${sizeOfStackReserve.realName}: ${sizeOfStackReserve.hex}
+            |    ${sizeOfStackCommit.realName}: ${sizeOfStackCommit.hex}
+            |    ${sizeOfHeapReserve.realName}: ${sizeOfHeapReserve.hex}
+            |    ${sizeOfHeapCommit.realName}: ${sizeOfHeapCommit.hex}
+            |    ${loaderFlags.realName}: ${loaderFlags.hex}
+            |    ${numberOfRvaAndSizes.realName}: ${numberOfRvaAndSizes.hex}
             |
             |  (Data directories)
         """.trimMargin()
