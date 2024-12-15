@@ -5,6 +5,7 @@ import std.student.conventions.QWord
 import std.student.conventions.toQWord
 import std.student.headers.pe.headers.coff.CoffHeader
 import std.student.headers.pe.headers.optional.OptionalHeader
+import std.student.headers.pe.headers.section.SectionHeader
 import std.student.headers.pe.signature.PeSignature
 import java.io.RandomAccessFile
 
@@ -18,7 +19,7 @@ class Pe {
     private val optionalHeaderOffset: QWord
     private val optionalHeader: OptionalHeader
 
-    // TODO: Add optional header and section headers
+    private val sectionsHeaders: List<SectionHeader>
 
     constructor(startOffset: DWord, file: RandomAccessFile) {
         peSignatureOffset = startOffset.toQWord()
@@ -29,6 +30,12 @@ class Pe {
 
         optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
         optionalHeader = OptionalHeader.get(optionalHeaderOffset, file)
+
+        val numberOfSections = coffHeader.numberOfSections.data
+        sectionsHeaders = (0 until numberOfSections).map { sectionIndex ->
+            val sectionHeaderOffset = optionalHeaderOffset + optionalHeader.size + sectionIndex * SectionHeader.SIZE
+            SectionHeader.get(sectionHeaderOffset, file)
+        }
     }
 
     constructor(
@@ -36,6 +43,7 @@ class Pe {
         peSignature: PeSignature,
         coffHeader: CoffHeader,
         optionalHeader: OptionalHeader,
+        sectionHeaders: List<SectionHeader>,
     ) {
         peSignatureOffset = startOffset
         this.peSignature = peSignature
@@ -45,6 +53,8 @@ class Pe {
 
         optionalHeaderOffset = coffHeaderOffset + CoffHeader.SIZE
         this.optionalHeader = optionalHeader
+
+        sectionsHeaders = sectionHeaders
     }
 
     override fun toString(): String {
@@ -54,6 +64,8 @@ class Pe {
             |$coffHeader
             |
             |$optionalHeader
+            |
+            |${sectionsHeaders.joinToString("\n\n")}
         """.trimMargin()
     }
 }
