@@ -46,7 +46,7 @@ data class OptionalHeader(
 ) {
     companion object {
         const val PE32_SIZE = 216
-        const val PE32_PLUS_SIZE = 224
+        const val PE32_PLUS_SIZE = 232
 
         fun get(headerOffset: QWord, file: RandomAccessFile): OptionalHeader {
             val magic = Magic(headerOffset, file)
