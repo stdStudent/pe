@@ -1,6 +1,5 @@
 package std.student
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,15 +10,18 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import std.student.headers.dos.header.DosHeader
 import std.student.headers.dos.stub.DosStub
 import std.student.headers.pe.Pe
+import std.student.utils.LocalPreferences.Settings
 import java.io.RandomAccessFile
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
+import kotlin.io.path.Path
 
 private fun processFile(filePath: String): String {
     if (filePath.isEmpty())
@@ -43,10 +45,9 @@ private fun processFile(filePath: String): String {
 }
 
 @Composable
-@Preview
 fun FileSelectionButton(onFileSelected: (String) -> Unit) {
     Button(onClick = {
-        val fileChooser = JFileChooser().apply {
+        val fileChooser = JFileChooser(Settings.lastOpenedDir).apply {
             fileFilter = FileNameExtensionFilter("PE Files", "exe", "dll")
         }
 
@@ -54,6 +55,7 @@ fun FileSelectionButton(onFileSelected: (String) -> Unit) {
         if (result == JFileChooser.APPROVE_OPTION) {
             val filePath = fileChooser.selectedFile.absolutePath
             onFileSelected(filePath)
+            Settings.lastOpenedDir = fileChooser.currentDirectory.absolutePath
         }
     }) {
         Text("Select File")
@@ -61,13 +63,13 @@ fun FileSelectionButton(onFileSelected: (String) -> Unit) {
 }
 
 @Composable
-@Preview
 fun ScrollableTextOutput(output: String) {
     val scrollState = rememberScrollState()
 
     Box {
         Text(
             text = output,
+            fontFamily = FontFamily.Monospace,
             modifier = Modifier.verticalScroll(scrollState).fillMaxWidth().padding(end = 12.dp)
         )
         VerticalScrollbar(
@@ -78,7 +80,7 @@ fun ScrollableTextOutput(output: String) {
 }
 
 @Composable
-fun App() {
+fun App(onFileChosen: (String) -> Unit) {
     var filePath by remember { mutableStateOf("") }
     var output by remember { mutableStateOf("") }
     var isButtonVisible by remember { mutableStateOf(true) }
@@ -92,6 +94,9 @@ fun App() {
                 filePath = selectedFilePath
                 output = processFile(filePath)
                 isButtonVisible = false // hide the button
+
+                val fileName = Path(filePath).fileName.toString()
+                onFileChosen(fileName)
             })
         }
 
@@ -102,7 +107,15 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
+    val appTitle = "PE Tool"
+    var windowTitle by remember { mutableStateOf(appTitle) }
+
+    Window(
+        title = windowTitle,
+        onCloseRequest = ::exitApplication
+    ) {
+        App(onFileChosen = { fileName ->
+            windowTitle = "$appTitle: $fileName"
+        })
     }
 }
