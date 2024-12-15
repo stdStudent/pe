@@ -1,8 +1,10 @@
 package std.student.headers.pe.headers.optional
 
 import std.student.conventions.QWord
+import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
 import std.student.headers.pe.headers.optional.elements.standard.*
 import std.student.headers.pe.headers.optional.elements.windowsSpecific.*
+import std.student.headers.pe.headers.optional.elements.dataDirectories.elements.*
 import java.io.RandomAccessFile
 
 data class OptionalHeader(
@@ -42,7 +44,22 @@ data class OptionalHeader(
 
 
     // Data directories
-
+    val exportTable: ExportTable,
+    val importTable: ImportTable,
+    val resourceTable: ResourceTable,
+    val exceptionTable: ExceptionTable,
+    val certificateTable: CertificateTable,
+    val baseRelocationTable: BaseRelocationTable,
+    val debug: Debug,
+    val architecture: Architecture,
+    val globalPointer: GlobalPointer,
+    val tlsTable: TLSTable,
+    val loadConfigurationTable: LoadConfigurationTable,
+    val boundImport: BoundImport,
+    val importAddressTable: ImportAddressTable,
+    val delayImportDescriptor: DelayImportDescriptor,
+    val clrRuntimeHeader: CLRRuntimeHeader,
+    val reserved: Reserved,
 ) {
     companion object {
         const val PE32_SIZE = 216
@@ -87,9 +104,32 @@ data class OptionalHeader(
                 numberOfRvaAndSizes = NumberOfRvaAndSizes(headerOffset, magic.data, file),
 
                 // Data directories
+                exportTable = ExportTable(headerOffset, magic.data, file),
+                importTable = ImportTable(headerOffset, magic.data, file),
+                resourceTable = ResourceTable(headerOffset, magic.data, file),
+                exceptionTable = ExceptionTable(headerOffset, magic.data, file),
+                certificateTable = CertificateTable(headerOffset, magic.data, file),
+                baseRelocationTable = BaseRelocationTable(headerOffset, magic.data, file),
+                debug = Debug(headerOffset, magic.data, file),
+                architecture = Architecture(headerOffset, magic.data, file),
+                globalPointer = GlobalPointer(headerOffset, magic.data, file),
+                tlsTable = TLSTable(headerOffset, magic.data, file),
+                loadConfigurationTable = LoadConfigurationTable(headerOffset, magic.data, file),
+                boundImport = BoundImport(headerOffset, magic.data, file),
+                importAddressTable = ImportAddressTable(headerOffset, magic.data, file),
+                delayImportDescriptor = DelayImportDescriptor(headerOffset, magic.data, file),
+                clrRuntimeHeader = CLRRuntimeHeader(headerOffset, magic.data, file),
+                reserved = Reserved(headerOffset, magic.data, file),
             )
         }
     }
+
+    private val DataDirectoryElement.readableProperties
+        get() = """
+            |
+            |      RVA: $rvaOffsetHex,
+            |      size: $rvaSizeHex bytes
+        """.trimMargin()
 
     override fun toString(): String {
         return """
@@ -129,6 +169,22 @@ data class OptionalHeader(
             |    ${numberOfRvaAndSizes.realName}: ${numberOfRvaAndSizes.hex}
             |
             |  (Data directories)
+            |    ${exportTable.realName}: ${exportTable.readableProperties}
+            |    ${importTable.realName}: ${importTable.readableProperties}
+            |    ${resourceTable.realName}: ${resourceTable.readableProperties}
+            |    ${exceptionTable.realName}: ${exceptionTable.readableProperties}
+            |    ${certificateTable.realName}: ${certificateTable.readableProperties}
+            |    ${baseRelocationTable.realName}: ${baseRelocationTable.readableProperties}
+            |    ${debug.realName}: ${debug.readableProperties}
+            |    ${architecture.realName}: ${architecture.readableProperties}
+            |    ${globalPointer.realName}: ${globalPointer.readableProperties}
+            |    ${tlsTable.realName}: ${tlsTable.readableProperties}
+            |    ${loadConfigurationTable.realName}: ${loadConfigurationTable.readableProperties}
+            |    ${boundImport.realName}: ${boundImport.readableProperties}
+            |    ${importAddressTable.realName}: ${importAddressTable.readableProperties}
+            |    ${delayImportDescriptor.realName}: ${delayImportDescriptor.readableProperties}
+            |    ${clrRuntimeHeader.realName}: ${clrRuntimeHeader.readableProperties}
+            |    ${reserved.realName}: ${reserved.readableProperties}
         """.trimMargin()
     }
 }
