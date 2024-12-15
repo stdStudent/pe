@@ -1,10 +1,13 @@
 package std.student.headers.pe.headers.optional
 
+import std.student.conventions.DWord
 import std.student.conventions.QWord
 import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
 import std.student.headers.pe.headers.optional.elements.standard.*
 import std.student.headers.pe.headers.optional.elements.windowsSpecific.*
 import std.student.headers.pe.headers.optional.elements.dataDirectories.elements.*
+import std.student.headers.pe.type.PeType.Companion.PE32_MAGIC
+import std.student.headers.pe.type.PeType.Companion.PE32_PLUS_MAGIC
 import java.io.RandomAccessFile
 
 data class OptionalHeader(
@@ -62,8 +65,8 @@ data class OptionalHeader(
     val reserved: Reserved,
 ) {
     companion object {
-        const val PE32_SIZE = 216
-        const val PE32_PLUS_SIZE = 232
+        const val PE32_SIZE = 224
+        const val PE32_PLUS_SIZE = 240
 
         fun get(headerOffset: QWord, file: RandomAccessFile): OptionalHeader {
             val magic = Magic(headerOffset, file)
@@ -123,6 +126,13 @@ data class OptionalHeader(
             )
         }
     }
+
+    inline val size: DWord
+        get() = when (magic.data) {
+            PE32_MAGIC -> PE32_SIZE
+            PE32_PLUS_MAGIC -> PE32_PLUS_SIZE
+            else -> throw IllegalArgumentException("Invalid magic number: ${magic.hex}")
+        }
 
     private val DataDirectoryElement.readableProperties
         get() = """
