@@ -4,6 +4,7 @@ import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -67,11 +68,13 @@ fun ScrollableTextOutput(output: String) {
     val scrollState = rememberScrollState()
 
     Box {
-        Text(
-            text = output,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.verticalScroll(scrollState).fillMaxWidth().padding(end = 12.dp)
-        )
+        SelectionContainer {
+            Text(
+                text = output,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.verticalScroll(scrollState).fillMaxWidth().padding(end = 12.dp)
+            )
+        }
         VerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             adapter = rememberScrollbarAdapter(scrollState)
