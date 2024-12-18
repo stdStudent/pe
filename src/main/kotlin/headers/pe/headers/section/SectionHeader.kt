@@ -1,5 +1,6 @@
 package std.student.headers.pe.headers.section
 
+import std.student.headers.Header
 import std.student.headers.pe.headers.section.elements.*
 import java.io.RandomAccessFile
 
@@ -14,7 +15,7 @@ data class SectionHeader(
     val numberOfRelocations: NumberOfRelocations,
     val numberOfLineNumbers: NumberOfLineNumbers,
     val characteristics: Characteristics,
-) {
+): Header {
     companion object {
         const val SIZE = 40
 
@@ -33,9 +34,11 @@ data class SectionHeader(
             )
     }
 
+    override val headerName = "Section Header"
+
     override fun toString(): String {
         return """
-            |SECTION HEADER:
+            |$headerName:
             |    ${name.realName}: ${name.hex} ($name)
             |    ${virtualSize.realName}: ${virtualSize.hex}
             |    ${virtualAddress.realName}: ${virtualAddress.hex}

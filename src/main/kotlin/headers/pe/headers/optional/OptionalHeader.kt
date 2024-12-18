@@ -2,6 +2,7 @@ package std.student.headers.pe.headers.optional
 
 import std.student.conventions.DWord
 import std.student.conventions.QWord
+import std.student.headers.Header
 import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
 import std.student.headers.pe.headers.optional.elements.standard.*
 import std.student.headers.pe.headers.optional.elements.windowsSpecific.*
@@ -63,7 +64,7 @@ data class OptionalHeader(
     val delayImportDescriptor: DelayImportDescriptor,
     val clrRuntimeHeader: CLRRuntimeHeader,
     val reserved: Reserved,
-) {
+): Header {
     companion object {
         const val PE32_SIZE = 224
         const val PE32_PLUS_SIZE = 240
@@ -141,9 +142,11 @@ data class OptionalHeader(
             |      size: $rvaSizeHex bytes
         """.trimMargin()
 
+    override val headerName = "Optional Header"
+
     override fun toString(): String {
         return """
-            |OPTIONAL HEADER:
+            |$headerName:
             |  (Standard fields)
             |    ${magic.realName}: ${magic.hex}
             |    ${majorLinkerVersion.realName}: ${majorLinkerVersion.hex}

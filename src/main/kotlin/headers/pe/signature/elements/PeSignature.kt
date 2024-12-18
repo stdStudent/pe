@@ -1,4 +1,4 @@
-package std.student.headers.pe.signature
+package std.student.headers.pe.signature.elements
 
 import std.student.conventions.DWord
 import std.student.conventions.QWord
@@ -43,12 +43,5 @@ class PeSignature: PeElement<DWord> {
 
         file.seek(realOffset)
         file.write(byteBuffer.array())
-    }
-
-    override fun toString(): String {
-        return """
-            |$realName: 
-            |    $hex
-        """.trimMargin()
     }
 }

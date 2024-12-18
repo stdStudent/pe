@@ -1,5 +1,6 @@
 package std.student.headers.dos.header
 
+import std.student.headers.Header
 import std.student.headers.dos.header.elements.*
 import java.io.RandomAccessFile
 
@@ -23,7 +24,7 @@ data class DosHeader(
     val oemInformation: OemInformation,
     val secondReserved: SecondReserved,
     val offsetToPeSignature: OffsetToPeSignature,
-) {
+): Header {
     companion object {
         const val HEADER_OFFSET = 0x0L
 
@@ -52,9 +53,11 @@ data class DosHeader(
         }
     }
 
+    override val headerName = "DOS Header"
+
     override fun toString(): String {
         return """
-            |DOS HEADER:
+            |$headerName:
             |    ${mZ.realName}: ${mZ.hex}
             |    ${lastSize.realName}: ${lastSize.hex}
             |    ${pagesInFile.realName}: ${pagesInFile.hex}

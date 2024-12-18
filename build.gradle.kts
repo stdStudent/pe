@@ -14,6 +14,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
     implementation(compose.desktop.currentOs)
     implementation("io.arrow-kt:arrow-core:2.0.0")
     testImplementation(kotlin("test"))

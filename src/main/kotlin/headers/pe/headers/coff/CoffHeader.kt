@@ -1,6 +1,7 @@
 package std.student.headers.pe.headers.coff
 
 import std.student.conventions.QWord
+import std.student.headers.Header
 import std.student.headers.pe.headers.coff.elements.Characteristics
 import std.student.headers.pe.headers.coff.elements.NumberOfSections
 import std.student.headers.pe.headers.coff.elements.NumberOfSymbols
@@ -18,7 +19,7 @@ data class CoffHeader(
     val numberOfSymbols: NumberOfSymbols,
     val sizeOfOptionalHeader: SizeOfOptionalHeader,
     val characteristics: Characteristics,
-) {
+): Header {
     companion object {
         const val SIZE = 20
 
@@ -34,9 +35,11 @@ data class CoffHeader(
             )
     }
 
+    override val headerName = "COFF Header"
+
     override fun toString(): String {
         return """
-            |COFF HEADER:
+            |$headerName:
             |    ${targetMachine.realName}: ${targetMachine.hex}
             |    ${numberOfSections.realName}: ${numberOfSections.hex}
             |    ${timeDateStamp.realName}: ${timeDateStamp.hex}
