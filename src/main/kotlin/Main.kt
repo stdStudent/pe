@@ -3,12 +3,15 @@ package std.student
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
@@ -19,8 +22,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import std.student.headers.Header.Companion.getProperties
+import std.student.conventions.getInstance
 import std.student.headers.Element
+import std.student.headers.Header.Companion.getProperties
+import std.student.headers.EmbeddableElement
 import std.student.headers.Header
 import std.student.headers.dos.Dos
 import std.student.headers.pe.Pe
@@ -132,6 +137,84 @@ fun TextScreen(onFileChosen: (String) -> Unit) {
 }
 
 @Composable
+fun CopyElement(element: EmbeddableElement<*>) {
+    var showDialog by remember { mutableStateOf(false) }
+    var newValue by remember { mutableStateOf("") }
+    var copiedElement by remember { mutableStateOf<EmbeddableElement<*>?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Reset values when the element changes (i.e. another file is selected)
+    LaunchedEffect(element) {
+        showDialog = false
+        newValue = ""
+        copiedElement = null
+        errorMessage = null
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            text = {
+                TextField(
+                    value = newValue,
+                    onValueChange = { input ->
+                        val filteredInput = input.replace(Regex("\\s+"), " ") // only single space allowed
+                        newValue = filteredInput
+                    },
+                    label = { Text("Enter New Value") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    try {
+                        val dataType = element.getDataType()
+                        val newData = dataType.getInstance(newValue.trim())
+                        copiedElement = element.getCopy(newData)
+                        showDialog = false
+                        errorMessage = null
+                    } catch (e: Throwable) {
+                        errorMessage = "Error: ${e.message ?: "N/A"}, cause: ${e.cause?.message ?: "N/A."}"
+                    }
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    errorMessage?.let {
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Error") },
+            text = { Text(it) },
+            confirmButton = {
+                Button(onClick = { errorMessage = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    IconButton(onClick = { showDialog = true }) {
+        if (copiedElement == null) {
+            Icon(
+                imageVector = Icons.Default.Create,
+                contentDescription = "Copy Element"
+            )
+        } else {
+            Text(text = copiedElement!!.hex, modifier = Modifier.padding(8.dp))
+        }
+    }
+}
+
+
+@Composable
 fun ElementDisplay(element: Element<*>) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -158,6 +241,8 @@ fun ElementDisplay(element: Element<*>) {
             ) {
                 Text(text = element.hex, softWrap = true) // Allow text to wrap
             }
+            Spacer(modifier = Modifier.width(8.dp))
+            CopyElement(element as EmbeddableElement<*>)
         }
 
         if (isExpanded)
