@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import std.student.conventions.getInstance
@@ -266,7 +267,12 @@ fun ElementDisplay(element: Element<*>, filePath: String) {
                     .wrapContentWidth(Alignment.Start)
                     .wrapContentHeight(Alignment.Top)
             ) {
-                Text(text = element.hex, softWrap = true) // Allow text to wrap
+                Text(
+                    text = element.hex,
+                    softWrap = true,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 16.sp,
+                )
             }
             Spacer(modifier = Modifier.width(8.dp))
             CopyElement(element as EmbeddableElement<*>, filePath)

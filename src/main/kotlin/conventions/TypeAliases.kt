@@ -12,7 +12,7 @@ typealias QWord = Long
 fun DWord.toQWord(): QWord = this.toLong()
 fun QWord.toDWord(): DWord = this.toInt()
 
-fun Number.toHex(padding: UInt = 0u): String = "%0${ if (padding > 0u) padding else 1u }x".format(this).uppercase()
+fun Number.toHex(padding: UInt = 0u) = "0x" + "%0${ if (padding > 0u) padding else 1u }x".format(this).uppercase()
 
 inline val Byte.hex: String get() = this.toHex(2u)
 inline val Word.hex: String get() = this.toHex(4u)
