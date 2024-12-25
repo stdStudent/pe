@@ -11,6 +11,7 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -61,6 +62,8 @@ private fun getHeaders(filePath: String): List<Header> {
 
     val dos = Dos(file)
     val pe = Pe(dos.header.offsetToPeSignature.data, file)
+
+    file.close()
 
     val result = mutableListOf<Header>().apply {
         add(dos.header)
@@ -137,7 +140,7 @@ fun TextScreen(onFileChosen: (String) -> Unit) {
 }
 
 @Composable
-fun CopyElement(element: EmbeddableElement<*>) {
+fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
     var showDialog by remember { mutableStateOf(false) }
     var newValue by remember { mutableStateOf("") }
     var copiedElement by remember { mutableStateOf<EmbeddableElement<*>?>(null) }
@@ -201,21 +204,44 @@ fun CopyElement(element: EmbeddableElement<*>) {
         )
     }
 
-    IconButton(onClick = { showDialog = true }) {
-        if (copiedElement == null) {
-            Icon(
-                imageVector = Icons.Default.Create,
-                contentDescription = "Copy Element"
-            )
-        } else {
-            Text(text = copiedElement!!.hex, modifier = Modifier.padding(8.dp))
+    Row {
+        IconButton(onClick = { showDialog = true }) {
+            if (copiedElement == null) {
+                Icon(
+                    imageVector = Icons.Default.Create,
+                    contentDescription = "Copy Element"
+                )
+            } else {
+                Text(text = copiedElement!!.hex, modifier = Modifier.padding(8.dp))
+            }
+        }
+
+        copiedElement?.let { changedElement ->
+            var success by remember { mutableStateOf(false) }
+
+            IconButton(onClick = {
+                try {
+                    val file = RandomAccessFile(filePath, "rw")
+                    changedElement.embed(file)
+
+                    success = true
+                    file.close()
+                } catch (e: Throwable) {
+                    errorMessage = "Error: ${e.message ?: "N/A"}, cause: ${e.cause?.message ?: "N/A."}"
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Paste Element",
+                    tint = if (success) Color.Green else Color.Unspecified
+                )
+            }
         }
     }
 }
 
-
 @Composable
-fun ElementDisplay(element: Element<*>) {
+fun ElementDisplay(element: Element<*>, filePath: String) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(8.dp)) {
@@ -242,7 +268,7 @@ fun ElementDisplay(element: Element<*>) {
                 Text(text = element.hex, softWrap = true) // Allow text to wrap
             }
             Spacer(modifier = Modifier.width(8.dp))
-            CopyElement(element as EmbeddableElement<*>)
+            CopyElement(element as EmbeddableElement<*>, filePath)
         }
 
         if (isExpanded)
@@ -251,7 +277,7 @@ fun ElementDisplay(element: Element<*>) {
 }
 
 @Composable
-fun HeadersDisplay(headers: List<Header>) {
+fun HeadersDisplay(headers: List<Header>, filePath: String) {
     headers.forEach { header ->
         val headerName = header.headerName
         val headerElements: List<Element<*>> = header.getProperties()
@@ -260,7 +286,7 @@ fun HeadersDisplay(headers: List<Header>) {
             Text(text = headerName, modifier = Modifier.padding(8.dp))
             Column(modifier = Modifier.padding(8.dp)) {
                 headerElements.forEach { element ->
-                    ElementDisplay(element)
+                    ElementDisplay(element, filePath)
                 }
             }
         }
@@ -303,7 +329,7 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
         listOfHeaders.isNotEmpty().let {
             Box {
                 Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                    HeadersDisplay(listOfHeaders)
+                    HeadersDisplay(listOfHeaders, selectedFilePath ?: return)
                 }
                 VerticalScrollbar(
                     modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
