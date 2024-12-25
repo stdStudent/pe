@@ -3,33 +3,25 @@ package std.student
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.RadioButton
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import std.student.conventions.getInstance
+import std.student.conventions.toDecimal
 import std.student.headers.Element
-import std.student.headers.Header.Companion.getProperties
 import std.student.headers.EmbeddableElement
 import std.student.headers.Header
+import std.student.headers.Header.Companion.getProperties
 import std.student.headers.dos.Dos
 import std.student.headers.pe.Pe
 import std.student.utils.LocalPreferences.Settings
@@ -142,6 +134,34 @@ fun TextScreen(onFileChosen: (String) -> Unit) {
 }
 
 @Composable
+private fun ElementValue(element: Element<*>) {
+    var isHex by remember { mutableStateOf(true) }
+    val text = if (isHex)
+        element.hex
+    else {
+        val hexValues = element.hex.split(", ")
+        hexValues.joinToString(", ") { it.toDecimal() }
+    }
+
+    val annotatedString = buildAnnotatedString {
+        pushStringAnnotation(tag = "URL", annotation = text)
+        append(text)
+    }
+
+    Text(
+        text = annotatedString,
+        softWrap = true,
+        fontFamily = FontFamily.Monospace,
+        fontSize = 15.sp,
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable {
+                isHex = !isHex
+            }
+    )
+}
+
+@Composable
 fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
     var showDialog by remember { mutableStateOf(false) }
     var newValue by remember { mutableStateOf("") }
@@ -209,13 +229,13 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
 
     Row {
         IconButton(onClick = { showDialog = true }) {
-            if (copiedElement == null) {
+            if (copiedElement != null) {
+                ElementValue(copiedElement!!)
+            } else {
                 Icon(
                     imageVector = Icons.Default.Create,
                     contentDescription = "Copy Element"
                 )
-            } else {
-                Text(text = copiedElement!!.hex, modifier = Modifier.padding(8.dp))
             }
         }
 
@@ -268,12 +288,7 @@ fun ElementDisplay(element: Element<*>, filePath: String) {
                     .wrapContentWidth(Alignment.Start)
                     .wrapContentHeight(Alignment.Top)
             ) {
-                Text(
-                    text = element.hex,
-                    softWrap = true,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 16.sp,
-                )
+                ElementValue(element)
             }
             Spacer(modifier = Modifier.width(8.dp))
             CopyElement(element as EmbeddableElement<*>, filePath)
