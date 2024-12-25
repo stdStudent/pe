@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -322,6 +323,17 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
                         .padding(8.dp)
                 ) {
                     Text(text = "Selected File: $it")
+                }
+                IconButton(onClick = {
+                    listOfHeaders.apply {
+                        clear()
+                        addAll(getHeaders(it))
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Reread file content."
+                    )
                 }
             }
         }
