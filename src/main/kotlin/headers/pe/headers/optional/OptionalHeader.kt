@@ -2,6 +2,8 @@ package std.student.headers.pe.headers.optional
 
 import std.student.conventions.DWord
 import std.student.conventions.QWord
+import std.student.conventions.hex
+import std.student.conventions.toHex
 import std.student.headers.Header
 import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
 import std.student.headers.pe.headers.optional.elements.standard.*
@@ -9,6 +11,7 @@ import std.student.headers.pe.headers.optional.elements.windowsSpecific.*
 import std.student.headers.pe.headers.optional.elements.dataDirectories.elements.*
 import std.student.headers.pe.type.PeType.Companion.PE32_MAGIC
 import std.student.headers.pe.type.PeType.Companion.PE32_PLUS_MAGIC
+import std.student.headers.pe.type.PeType.Companion.ROM_IMAGE
 import java.io.RandomAccessFile
 
 data class OptionalHeader(
@@ -71,6 +74,13 @@ data class OptionalHeader(
 
         fun get(headerOffset: QWord, file: RandomAccessFile): OptionalHeader {
             val magic = Magic(headerOffset, file)
+            if (magic.data !in listOf(PE32_MAGIC, PE32_PLUS_MAGIC))
+                throw IllegalArgumentException(
+                    "Invalid magic number ${magic.hex} at position ${magic.realOffset.toHex()}. " +
+                    "Expected either ${PE32_MAGIC.hex} or ${PE32_PLUS_MAGIC.hex} " +
+                    "(ROM files with magic ${ROM_IMAGE.hex} are not supported). " +
+                    "Optional header cannot be parsed."
+                )
 
             return OptionalHeader(
                 // Standard fields
