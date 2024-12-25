@@ -167,6 +167,7 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
                         newValue = filteredInput
                     },
                     label = { Text("Enter New Value") },
+                    placeholder = { Text("0xABC or ABCh for HEX. Decimal by default.") },
                     singleLine = true
                 )
             },
@@ -375,7 +376,7 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
             }
 
             AlertDialog(
-                title = { Text("Error") },
+                title = { Text("Error while opening the file.") },
                 text = { Text(openFileErrorMessage) },
                 onDismissRequest = { reset() },
                 confirmButton = {
