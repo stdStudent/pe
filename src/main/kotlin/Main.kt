@@ -306,6 +306,24 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
     val listOfHeaders by remember { mutableStateOf(mutableStateListOf<Header>()) }
     val scrollState = rememberScrollState()
 
+    var isOpenedSuccessfully by remember { mutableStateOf(false) }
+    var openFileErrorMessage by remember { mutableStateOf<String>("") }
+    fun setListOfHeaders(filePath: String) {
+        listOfHeaders.apply {
+            clear()
+
+            val headers = try {
+                getHeaders(filePath)
+            } catch (e: Throwable) {
+                isOpenedSuccessfully = false
+                openFileErrorMessage = "Error: ${e.message ?: "N/A"}, cause: ${e.cause?.message ?: "N/A."}"
+                return
+            }
+
+            addAll(headers)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -314,12 +332,8 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
         ) {
             FileSelectionButton { filePath ->
                 selectedFilePath = filePath
-                listOfHeaders.apply {
-                    clear()
-                    addAll(getHeaders(filePath))
-                }
-
                 val fileName = Path(filePath).fileName.toString()
+                setListOfHeaders(filePath)
                 onFileChosen(fileName)
             }
             selectedFilePath?.let {
@@ -331,10 +345,7 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
                     Text(text = "Selected File: $it")
                 }
                 IconButton(onClick = {
-                    listOfHeaders.apply {
-                        clear()
-                        addAll(getHeaders(it))
-                    }
+                    setListOfHeaders(it)
                 }) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -344,7 +355,7 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
             }
         }
 
-        listOfHeaders.isNotEmpty().let {
+        if (listOfHeaders.isNotEmpty()) {
             Box {
                 Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
                     HeadersDisplay(listOfHeaders, selectedFilePath ?: return)
@@ -354,6 +365,25 @@ fun GUIScreen(onFileChosen: (String) -> Unit) {
                     adapter = rememberScrollbarAdapter(scrollState)
                 )
             }
+        }
+
+        if (!isOpenedSuccessfully && openFileErrorMessage.isNotEmpty()) {
+            fun reset() {
+                isOpenedSuccessfully = true
+                openFileErrorMessage = ""
+                selectedFilePath = null
+            }
+
+            AlertDialog(
+                title = { Text("Error") },
+                text = { Text(openFileErrorMessage) },
+                onDismissRequest = { reset() },
+                confirmButton = {
+                    Button(onClick = { reset() }) {
+                        Text("OK")
+                    }
+                }
+            )
         }
     }
 }
