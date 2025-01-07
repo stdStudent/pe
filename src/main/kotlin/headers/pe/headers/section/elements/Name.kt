@@ -6,7 +6,6 @@ import std.student.headers.pe.PeElement
 import std.student.headers.pe.type.PeType
 import std.student.utils.BufferUtils
 import java.io.RandomAccessFile
-import java.nio.ByteBuffer.wrap
 
 class Name: PeElement<ByteArray> {
     override val data: ByteArray
@@ -43,7 +42,8 @@ class Name: PeElement<ByteArray> {
 
     override fun embed(file: RandomAccessFile) {
         val byteBuffer = BufferUtils.getEmptyBuffer(peType.size).apply {
-            wrap(data)
+            put(data)
+            flip()
         }
 
         file.seek(realOffset)

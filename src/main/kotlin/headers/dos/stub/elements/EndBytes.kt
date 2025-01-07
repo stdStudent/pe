@@ -6,7 +6,6 @@ import std.student.conventions.hex
 import std.student.headers.dos.DosElement
 import std.student.utils.BufferUtils
 import java.io.RandomAccessFile
-import java.nio.ByteBuffer.wrap
 
 class EndBytes: DosElement<ByteArray> {
     override val data: ByteArray
@@ -36,7 +35,8 @@ class EndBytes: DosElement<ByteArray> {
 
     override fun embed(file: RandomAccessFile) {
         val byteBuffer = BufferUtils.getEmptyBuffer(size).apply {
-            wrap(data)
+            put(data)
+            flip()
         }
 
         file.seek(realOffset)
