@@ -30,10 +30,16 @@ class FirstReserved: DosElement<List<Word>> {
     }
 
     constructor(original: FirstReserved, newData: List<Word>) {
-        if (newData.size != 4)
-            throw IllegalArgumentException("$realName must have 4 elements only.")
+        if (newData.size > 4)
+            throw IllegalArgumentException("$realName must have no more than 4 elements.")
 
-        data = newData
+        val remainingZeroes = if (newData.size < 4) {
+            val diff = 4 - newData.size
+            List<Word>(diff) { 0 }
+        } else
+            emptyList()
+
+        data = newData + remainingZeroes
         realOffset = original.realOffset
     }
 

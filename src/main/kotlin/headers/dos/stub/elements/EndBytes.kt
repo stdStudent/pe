@@ -29,7 +29,16 @@ class EndBytes: DosElement<ByteArray> {
     }
 
     constructor(original: EndBytes, newData: ByteArray) {
-        data = newData
+        if (newData.size > size)
+            throw IllegalArgumentException("$realName must be no more than $size bytes long.")
+
+        val remainingZeroes = if (newData.size < size) {
+            val diff = size - newData.size
+            ByteArray(diff) { 0 }
+        } else
+            byteArrayOf()
+
+        data = newData + remainingZeroes
         realOffset = original.realOffset
     }
 

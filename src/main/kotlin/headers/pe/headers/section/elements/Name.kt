@@ -33,10 +33,16 @@ class Name: PeElement<ByteArray> {
     }
 
     constructor(original: Name, newData: ByteArray) {
-        if (newData.size != peType.size)
-            throw IllegalArgumentException("$realName must be ${peType.size} bytes long.")
+        if (newData.size > peType.size)
+            throw IllegalArgumentException("$realName must be no more than ${peType.size} bytes long.")
 
-        data = newData
+        val remainingZeroes = if (newData.size < peType.size) {
+            val diff = peType.size - newData.size
+            ByteArray(diff) { 0 }
+        } else
+            byteArrayOf()
+
+        data = newData + remainingZeroes
         realOffset = original.realOffset
     }
 

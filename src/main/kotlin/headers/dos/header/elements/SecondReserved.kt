@@ -30,10 +30,16 @@ class SecondReserved: DosElement<List<Word>> {
     }
 
     constructor(original: SecondReserved, newData: List<Word>) {
-        if (newData.size != 10)
-            throw IllegalArgumentException("$realName must have 10 elements only.")
+        if (newData.size > 10)
+            throw IllegalArgumentException("$realName must have no more than 10 elements.")
 
-        data = newData
+        val remainingZeroes = if (newData.size < 10) {
+            val diff = 10 - newData.size
+            List<Word>(diff) { 0 }
+        } else
+            emptyList()
+
+        data = newData + remainingZeroes
         realOffset = original.realOffset
     }
 
