@@ -13,7 +13,6 @@ fun DWord.toQWord(): QWord = this.toLong()
 fun QWord.toDWord(): DWord = this.toInt()
 
 fun Number.toHex(padding: UInt = 0u) = "0x" + "%0${ if (padding > 0u) padding else 1u }x".format(this).uppercase()
-fun String.toDecimal(): String = this.substring(2).toLong(16).toString()
 
 inline val Byte.hex: String get() = this.toHex(2u)
 inline val Word.hex: String get() = this.toHex(4u)
@@ -47,18 +46,18 @@ inline var ByteBuffer.qword: QWord
 // ----------------------
 // Reflection type traits
 
-private fun String.convert(): String = when {
+private fun String.convert(): Long = when {
     this.startsWith("0x") -> {
         val value = this.substring(2)
-        value.toLong(16).toString()
+        value.toLong(16)
     }
 
     this.endsWith("h") -> {
         val value = this.substring(0, this.length - 1)
-        value.toLong(16).toString()
+        value.toLong(16)
     }
 
-    else -> this
+    else -> this.toLong(10)
 }
 
 fun String.getInstance(arg: String): Any {

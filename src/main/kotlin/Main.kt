@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import std.student.conventions.getInstance
-import std.student.conventions.toDecimal
 import std.student.headers.Element
 import std.student.headers.EmbeddableElement
 import std.student.headers.Header
@@ -139,8 +138,16 @@ private fun ElementValue(element: Element<*>) {
     val text = if (isHex)
         element.hex
     else {
-        val hexValues = element.hex.split(", ")
-        hexValues.joinToString(", ") { it.toDecimal() }
+        if (element.hex == "Absent") "N/A" // BaseOfData for PE32+
+
+        // Handles both numeric and string values
+        val dataType = element.getDataType()
+        val value = dataType.getInstance(element.hex.split(", ").joinToString(" "))
+        when (value) {
+            is List<*> -> value.joinToString(", ") { it.toString() }
+            is ByteArray -> String(value)
+            else -> value.toString()
+        }
     }
 
     val annotatedString = buildAnnotatedString {
