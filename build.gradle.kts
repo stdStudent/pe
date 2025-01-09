@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.21"
+    id("com.gradleup.shadow") version "8.3.5"
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
     id("org.jetbrains.compose") version "1.7.1"
 }
@@ -23,6 +24,12 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "MainKt"
+    }
+}
+
+tasks.shadowJar {
+    manifest {
+        attributes("Main-Class" to "std.student.MainKt")
     }
 }
 
