@@ -227,14 +227,23 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
                         "\"abc\" for ASCII.\n" +
                         "'MZ' for bytes (little endian)."
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = {
+                        newValue = element.hex
+                    }) {
+                        Text("Paste Original")
+                    }
                 }
             },
             confirmButton = {
                 Button(onClick = {
                     try {
                         val dataType = element.getDataType()
-                        val newData = dataType.getInstance(newValue.trim())
+                        val normalizedNewValue = newValue.trim().replace(", ", " ")
+
+                        val newData = dataType.getInstance(normalizedNewValue)
                         copiedElement = element.getCopy(newData)
+
                         showDialog = false
                         errorMessage = null
                     } catch (e: Throwable) {
