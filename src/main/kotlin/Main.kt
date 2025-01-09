@@ -174,6 +174,7 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
     var newValue by remember { mutableStateOf("") }
     var copiedElement by remember { mutableStateOf<EmbeddableElement<*>?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var success by remember { mutableStateOf(false) }
 
     // Reset values when the element changes (i.e. another file is selected)
     LaunchedEffect(element) {
@@ -183,20 +184,32 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
         errorMessage = null
     }
 
+    LaunchedEffect(copiedElement) {
+        success = false
+    }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             text = {
-                TextField(
-                    value = newValue,
-                    onValueChange = { input ->
-                        val filteredInput = input.replace(Regex("\\s+"), " ") // only single space allowed
-                        newValue = filteredInput
-                    },
-                    label = { Text("Enter New Value") },
-                    placeholder = { Text("0xABC or ABCh for HEX. Decimal by default.") },
-                    singleLine = true
-                )
+                Column {
+                    TextField(
+                        value = newValue,
+                        onValueChange = { input ->
+                            val filteredInput = input.replace(Regex("\\s+"), " ") // only single space allowed
+                            newValue = filteredInput
+                        },
+                        label = { Text("Enter New Value") },
+                        placeholder = { Text("Decimal by default.") },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "0xABC or ABCh for HEX.\n" +
+                        "\"abc\" for ASCII.\n" +
+                        "'MZ' for bytes (little endian)."
+                    )
+                }
             },
             confirmButton = {
                 Button(onClick = {
@@ -247,8 +260,6 @@ fun CopyElement(element: EmbeddableElement<*>, filePath: String) {
         }
 
         copiedElement?.let { changedElement ->
-            var success by remember { mutableStateOf(false) }
-
             IconButton(onClick = {
                 try {
                     val file = RandomAccessFile(filePath, "rw")
