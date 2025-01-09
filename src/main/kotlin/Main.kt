@@ -23,6 +23,7 @@ import std.student.headers.Header
 import std.student.headers.Header.Companion.getProperties
 import std.student.headers.dos.Dos
 import std.student.headers.pe.Pe
+import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
 import std.student.utils.LocalPreferences.Settings
 import java.io.RandomAccessFile
 import javax.swing.JFileChooser
@@ -156,17 +157,33 @@ private fun ElementValue(element: Element<*>) {
         append(text)
     }
 
-    Text(
-        text = annotatedString,
-        softWrap = true,
-        fontFamily = FontFamily.Monospace,
-        fontSize = 15.sp,
-        modifier = Modifier
-            .padding(8.dp)
-            .clickable {
-                isHex = !isHex
-            }
-    )
+    Column {
+        Text(
+            text = annotatedString,
+            softWrap = true,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 15.sp,
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable {
+                    isHex = !isHex
+                }
+        )
+
+        if (element is DataDirectoryElement) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text =
+                    "RVA Offset: ${element.rvaOffsetHex}\n" +
+                    "RVA Size: ${element.rvaSizeHex}",
+                softWrap = true,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 15.sp,
+                color = Color.Blue,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
 }
 
 @Composable

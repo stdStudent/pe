@@ -12,4 +12,6 @@ interface DataDirectoryElement: PeElement<QWord> {
 
     val rvaOffsetHex: String get() = rvaOffset.hex
     val rvaSizeHex: String get() = rvaSize.hex
+
+    override fun getDataType(): String = "Long" // QWord, known at compile time
 }
