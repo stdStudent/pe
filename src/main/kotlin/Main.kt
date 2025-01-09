@@ -137,8 +137,9 @@ private fun ElementValue(element: Element<*>) {
     var isHex by remember { mutableStateOf(true) }
     val text = if (isHex)
         element.hex
-    else {
-        if (element.hex == "Absent") "N/A" // BaseOfData for PE32+
+    else run {
+        if (element.hex == "Absent")
+            return@run "N/A" // BaseOfData for PE32+
 
         // Handles both numeric and string values
         val dataType = element.getDataType()
