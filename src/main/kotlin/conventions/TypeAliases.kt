@@ -115,6 +115,12 @@ fun String.getInstance(arg: String): Any {
         "Right<Int>" -> value.convert().toInt().right()
         "Right<Long>" -> value.convert().toLong().right()
 
+        // Option types
+        "Option<Byte>" -> value.convert().toByte()
+        "Option<Short>" -> value.convert().toShort()
+        "Option<Int>" -> value.convert().toInt()
+        "Option<Long>" -> value.convert().toLong()
+
         else -> throw InternalException("Unknown type.")
     }
 }
