@@ -59,6 +59,54 @@ private fun processFile(filePath: String): String {
     }
 }
 
+private fun getImportHeaders(pe: Pe, file: RandomAccessFile): MutableList<Header> {
+    val importTableRVA = pe.optionalHeader.importTable.rvaOffset
+    var importTableFileOffset = importTableRVA.toFileOffset(pe.sectionsHeaders)
+
+    var fileOffset = importTableFileOffset
+    val iats = mutableListOf<ImportDirectoryTable>()
+
+    while (true) {
+        val iat = ImportDirectoryTable.get(fileOffset, file)
+        if (iat.importLookupTableRva.data == 0)
+            break
+
+        iats.add(iat)
+        fileOffset += ImportDirectoryTable.SIZE
+    }
+
+    // Determine if PE is 64-bit
+    val is64Bit = pe.optionalHeader.magic.data == PE32_PLUS_MAGIC
+    val hintSize = 2
+
+    val importHeaders = mutableListOf<Header>()
+
+    iats.forEach { iat ->
+        importHeaders.add(iat)
+
+        val dll = DLL.get(iat.nameRva.data, pe.sectionsHeaders, file)
+        importHeaders.add(dll)
+
+        var thunkFileOffset = iat.importLookupTableRva.data.toFileOffset(pe.sectionsHeaders)
+        var thunkData = getBuffer(file, thunkFileOffset, 4).dword
+
+        while (true) {
+            if (thunkData == 0)
+                break
+
+            val functionNameFileOffset = thunkData.toFileOffset(pe.sectionsHeaders) + hintSize
+            val importFunction = ImportFunction.get(functionNameFileOffset, file)
+            importHeaders.add(importFunction)
+
+            thunkFileOffset += if (is64Bit) 8 else 4
+            file.seek(thunkFileOffset)
+            thunkData = getBuffer(file, thunkFileOffset, 4).dword
+        }
+    }
+
+    return importHeaders
+}
+
 private fun getHeaders(filePath: String): List<Header> {
     if (filePath.isEmpty())
         throw IllegalArgumentException("No file was properly selected!")
@@ -67,47 +115,7 @@ private fun getHeaders(filePath: String): List<Header> {
 
     val dos = Dos(file)
     val pe = Pe(dos.header.offsetToPeSignature.data, file)
-
-    val importTableRVA = pe.optionalHeader.importTable.rvaOffset
-    var importTableFileOffset = importTableRVA.toFileOffset(pe.sectionsHeaders)
-
-    val iats = mutableListOf<ImportDirectoryTable>()
-    while (true) {
-        val iat = ImportDirectoryTable.get(importTableFileOffset, file)
-        if (iat.importLookupTableRva.data == 0)
-            break
-
-        iats.add(iat)
-        importTableFileOffset += ImportDirectoryTable.SIZE
-    }
-
-    val dlls = iats.map { DLL.get(it.nameRva.data, pe.sectionsHeaders, file) }
-
-    // Determine if PE is 64-bit
-    val is64Bit = pe.optionalHeader.magic.data == PE32_PLUS_MAGIC
-    val hintSize = 2
-
-    var thunkFileOffsets = iats.map { it.importLookupTableRva.data.toFileOffset(pe.sectionsHeaders) }
-
-    val importFunctions = mutableListOf<ImportFunction>()
-    thunkFileOffsets.forEach { thunkFileOffset ->
-        var thunkFileOffset = thunkFileOffset
-
-        var thunkData = getBuffer(file, thunkFileOffset, 4).dword
-        while (true) {
-            val functionNameFileOffset = thunkData.toFileOffset(pe.sectionsHeaders) + hintSize
-
-            val importFunction = ImportFunction.get(functionNameFileOffset, file)
-            importFunctions.add(importFunction)
-
-            thunkFileOffset += if (is64Bit) 8 else 4
-            file.seek(thunkFileOffset)
-
-            thunkData = getBuffer(file, thunkFileOffset, 4).dword
-            if (thunkData == 0)
-                break
-        }
-    }
+    val importHeaders = getImportHeaders(pe, file)
 
     file.close()
 
@@ -118,9 +126,7 @@ private fun getHeaders(filePath: String): List<Header> {
         add(pe.coffHeader)
         add(pe.optionalHeader)
         addAll(pe.sectionsHeaders)
-        addAll(iats)
-        addAll(dlls)
-        addAll(importFunctions)
+        addAll(importHeaders)
     }
 
     return result
