@@ -16,15 +16,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import std.student.conventions.dword
 import std.student.conventions.getInstance
 import std.student.headers.Element
 import std.student.headers.EmbeddableElement
 import std.student.headers.Header
 import std.student.headers.Header.Companion.getProperties
 import std.student.headers.dos.Dos
+import std.student.headers.importTable.dll.DLL
+import std.student.headers.importTable.funcion.ImportFunction
+import std.student.headers.importTable.idt.ImportDirectoryTable
 import std.student.headers.pe.Pe
 import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
+import std.student.headers.pe.type.PeType.Companion.PE32_PLUS_MAGIC
+import std.student.utils.BufferUtils.getBuffer
 import std.student.utils.LocalPreferences.Settings
+import std.student.utils.RvaUtils.toFileOffset
 import java.io.RandomAccessFile
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -57,6 +64,47 @@ private fun getHeaders(filePath: String): List<Header> {
     val dos = Dos(file)
     val pe = Pe(dos.header.offsetToPeSignature.data, file)
 
+    val importTableRVA = pe.optionalHeader.importTable.rvaOffset
+    var importTableFileOffset = importTableRVA.toFileOffset(pe.sectionsHeaders)
+
+    val iats = mutableListOf<ImportDirectoryTable>()
+    while (true) {
+        val iat = ImportDirectoryTable.get(importTableFileOffset, file)
+        if (iat.importLookupTableRva.data == 0)
+            break
+
+        iats.add(iat)
+        importTableFileOffset += ImportDirectoryTable.SIZE
+    }
+
+    val dlls = iats.map { DLL.get(it.nameRva.data, pe.sectionsHeaders, file) }
+
+    // Determine if PE is 64-bit
+    val is64Bit = pe.optionalHeader.magic.data == PE32_PLUS_MAGIC
+    val hintSize = 2
+
+    var thunkFileOffsets = iats.map { it.importLookupTableRva.data.toFileOffset(pe.sectionsHeaders) }
+
+    val importFunctions = mutableListOf<ImportFunction>()
+    thunkFileOffsets.forEach { thunkFileOffset ->
+        var thunkFileOffset = thunkFileOffset
+
+        var thunkData = getBuffer(file, thunkFileOffset, 4).dword
+        while (true) {
+            val functionNameFileOffset = thunkData.toFileOffset(pe.sectionsHeaders) + hintSize
+
+            val importFunction = ImportFunction.get(functionNameFileOffset, file)
+            importFunctions.add(importFunction)
+
+            thunkFileOffset += if (is64Bit) 8 else 4
+            file.seek(thunkFileOffset)
+
+            thunkData = getBuffer(file, thunkFileOffset, 4).dword
+            if (thunkData == 0)
+                break
+        }
+    }
+
     file.close()
 
     val result = mutableListOf<Header>().apply {
@@ -66,6 +114,9 @@ private fun getHeaders(filePath: String): List<Header> {
         add(pe.coffHeader)
         add(pe.optionalHeader)
         addAll(pe.sectionsHeaders)
+        addAll(iats)
+        addAll(dlls)
+        addAll(importFunctions)
     }
 
     return result
