@@ -23,11 +23,15 @@ import std.student.headers.EmbeddableElement
 import std.student.headers.Header
 import std.student.headers.Header.Companion.getProperties
 import std.student.headers.dos.Dos
+import std.student.headers.dos.stub.elements.Message
 import std.student.headers.importTable.dll.DLL
+import std.student.headers.importTable.dll.DLLElement
 import std.student.headers.importTable.funcion.ImportFunction
+import std.student.headers.importTable.funcion.ImportFunctionElement
 import std.student.headers.importTable.idt.ImportDirectoryTable
 import std.student.headers.pe.Pe
 import std.student.headers.pe.headers.optional.elements.dataDirectories.DataDirectoryElement
+import std.student.headers.pe.headers.section.elements.Name
 import std.student.headers.pe.type.PeType.Companion.PE32_PLUS_MAGIC
 import std.student.utils.BufferUtils.getBuffer
 import std.student.utils.LocalPreferences.Settings
@@ -186,7 +190,16 @@ fun TextScreen(onFileChosen: (String) -> Unit) {
 
 @Composable
 private fun ElementValue(element: Element<*>) {
-    var isHex by remember { mutableStateOf(true) }
+    var isHex by remember {
+        when (element) {
+            is Message -> mutableStateOf(false)
+            is Name -> mutableStateOf(false)
+            is DLLElement -> mutableStateOf(false)
+            is ImportFunctionElement -> mutableStateOf(false)
+
+            else -> mutableStateOf(true)
+        }
+    }
     val text = if (isHex)
         element.hex
     else run {
